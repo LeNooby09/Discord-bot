@@ -7,11 +7,12 @@ import {
   GatewayIntentBits,
   MessageFlags,
 } from "discord.js";
+import { createRequire } from "module";
 
-const config = await import("../config.json", { assert: { type: "json" } });
+const require = createRequire(import.meta.url);
+const config = await require("../config.json");
 const FOLDERS_PATH = path.join(import.meta.dirname, "commands");
 const COMMAND_FOLDERS = fs.readdirSync(FOLDERS_PATH);
-
 interface CommandImplementation {
   data: { name: string };
   execute: Function;
