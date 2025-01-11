@@ -7,8 +7,8 @@ import {
   GatewayIntentBits,
   MessageFlags,
 } from "discord.js";
-import config from "../config.json" assert { type: "json" };
 
+const config = await import("../config.json", { assert: { type: "json" } });
 const FOLDERS_PATH = path.join(import.meta.dirname, "commands");
 const COMMAND_FOLDERS = fs.readdirSync(FOLDERS_PATH);
 
