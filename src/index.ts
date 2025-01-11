@@ -1,26 +1,15 @@
-import fs from "fs";
-import path from "path";
-import {
-  Client,
-  Collection,
-  Events,
-  GatewayIntentBits,
-  MessageFlags,
-} from "discord.js";
+import { Client, Events, GatewayIntentBits, MessageFlags } from "discord.js";
 import { createRequire } from "module";
+import { CommandImplementation } from "./types/CommandImplementation.js";
+
+import commands from "./commands/index.js";
 
 const require = createRequire(import.meta.url);
 const config = await require("../config.json");
-const FOLDERS_PATH = path.join(import.meta.dirname, "commands");
-const COMMAND_FOLDERS = fs.readdirSync(FOLDERS_PATH);
-interface CommandImplementation {
-  data: { name: string };
-  execute: Function;
-}
 
 class DiscordBot {
   public client: Client;
-  public commands: Collection<string, any>;
+  public commands: Map<string, CommandImplementation>;
   private token: string;
 
   constructor(token: string) {
@@ -32,31 +21,10 @@ class DiscordBot {
       process.exit(1);
     }
 
-    this.commands = new Collection();
+    this.commands = commands;
     this.token = token;
   }
-  public async findCommands() {
-    for (const folder of COMMAND_FOLDERS) {
-      const commandsPath = path.join(FOLDERS_PATH, folder);
-      const commandFiles = fs
-        .readdirSync(commandsPath)
-        .filter((file) => file.endsWith(".js"));
-      for (const file of commandFiles) {
-        const filePath = path.join(commandsPath, file);
-        const command = (await import(filePath)) as CommandImplementation;
-        if ("data" in command && "execute" in command) {
-          this.commands.set(command.data!.name, command);
-        } else {
-          console.log(
-            `[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`
-          );
-        }
-      }
-    }
-  }
   public async setup() {
-    await this.findCommands();
-
     this.client.once(Events.ClientReady, (readyClient) => {
       console.log(`Ready! Logged in as ${readyClient.user.tag}`);
     });
