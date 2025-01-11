@@ -1,13 +1,14 @@
 import { Client, Events, GatewayIntentBits, MessageFlags } from "discord.js";
 import { createRequire } from "module";
 import { CommandImplementation } from "./types/CommandImplementation.js";
+import { CommandContext } from "./types/CommandContext.js";
 
 import commands from "./commands/index.js";
 
 const require = createRequire(import.meta.url);
 const config = await require("../config.json");
 
-class DiscordBot {
+export class DiscordBot {
   public client: Client;
   public commands: Map<string, CommandImplementation>;
   private token: string;
@@ -41,7 +42,8 @@ class DiscordBot {
       }
 
       try {
-        await command.execute(interaction);
+        const context: CommandContext = { interaction, bot: this };
+        await command.execute(context);
       } catch (error) {
         console.error(error);
 
