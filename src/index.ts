@@ -11,6 +11,7 @@ import {
   REST,
   Routes,
 } from "discord.js";
+import * as logger from "./logger.js";
 import { CommandImplementation } from "./types/CommandImplementation.js";
 import { CommandContext } from "./types/CommandContext.js";
 import { fetchCommandImplementations } from "./commands/index.js";
@@ -38,16 +39,14 @@ export class DiscordBot {
   private static createClient() {
     const client = new Client(CLIENT_OPTIONS);
     if (!client) {
-      console.error("Failed to create a new Discord client.");
-      process.exit(1);
+      logger.fatal("Failed to create a new Discord client.");
     }
     return client;
   }
 
   private async pushCommandsToDiscord() {
     if (!this.client?.user?.id) {
-      console.error("Client is not ready to push commands.");
-      process.exit(1);
+      logger.fatal("Client is not ready to push commands.");
     }
 
     const rest = new REST().setToken(this.token);
@@ -59,31 +58,28 @@ export class DiscordBot {
         Routes.applicationGuildCommands(this.client.user.id, CONFIG.guildId),
         { body: commandData }
       );
-      console.log(`Successfully registered commands.`);
+      logger.success(`Registered commands.`);
     } catch (error) {
-      console.error(`Failed to register commands: ${error}`);
+      logger.error(`Failed to register commands: ${error}`);
     }
   }
   private async fetchCommands() {
     this.commands = await fetchCommandImplementations();
     if (!this.commands) {
-      console.error("Failed to fetch command implementations.");
-      process.exit(1);
+      logger.fatal("Failed to fetch command implementations.");
     }
 
     await this.pushCommandsToDiscord();
   }
   private onReady(readyClient: Client) {
-    console.log(`Ready! Logged in as ${readyClient.user.tag}`);
+    logger.success(`Ready! Logged in as ${readyClient.user.tag}.`);
   }
   private async onInteractionCreate(interaction: Interaction) {
     if (!interaction.isChatInputCommand()) return;
 
     const command = this.commands.get(interaction.commandName);
     if (!command) {
-      console.error(
-        `No command matching ${interaction.commandName} was found.`
-      );
+      logger.error(`No command matching ${interaction.commandName} was found.`);
       return;
     }
 
@@ -91,7 +87,7 @@ export class DiscordBot {
     try {
       await command.execute(context);
     } catch (error) {
-      console.error(error);
+      logger.error(`Error while executing command: ${error}`);
       await this.replyWithError(interaction);
     }
   }

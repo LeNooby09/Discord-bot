@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import * as logger from "../logger.js";
 import { CommandImplementation } from "../types/CommandImplementation";
 
 const COMMAND_PATH = import.meta.dirname;
@@ -24,7 +25,7 @@ function checkIfValidCommandImplementation(
   implementation: CommandImplementation
 ) {
   if (!implementation.data || !implementation.execute) {
-    console.error(
+    logger.warning(
       `Command file is missing "data" or "execute". Skipping command.`
     );
     return false;
