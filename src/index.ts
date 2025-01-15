@@ -69,6 +69,9 @@ export class DiscordBot {
       logger.fatal("Failed to fetch command implementations.");
     }
 
+    for (const command of this.commands.values()) {
+      logger.info(`Fetched command: ${command.data.name}`);
+    }
     await this.pushCommandsToDiscord();
   }
   private onReady(readyClient: Client) {
