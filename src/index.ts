@@ -54,10 +54,9 @@ export class DiscordBot {
       command.data.toJSON()
     );
     try {
-      await rest.put(
-        Routes.applicationGuildCommands(this.client.user.id, CONFIG.guildId),
-        { body: commandData }
-      );
+      await rest.put(Routes.applicationCommands(this.client.user.id), {
+        body: commandData,
+      });
       logger.success(`Registered commands.`);
     } catch (error) {
       logger.error(`Failed to register commands: ${error}`);
