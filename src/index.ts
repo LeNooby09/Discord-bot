@@ -81,17 +81,14 @@ export class DiscordBot {
   public async setup() {
     await this.fetchCommands();
 
+    this.client.login(this.token);
     this.client.once(Events.ClientReady, this.onReady.bind(this));
     this.client.on(
       Events.InteractionCreate,
       this.onInteractionCreate.bind(this)
     );
   }
-  public login() {
-    this.client.login(this.token);
-  }
 }
 
 const bot = new DiscordBot(CONFIG.token);
 await bot.setup();
-bot.login();
