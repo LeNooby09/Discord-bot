@@ -50,7 +50,7 @@ export class DiscordBot {
     }
 
     const rest = new REST().setToken(this.token);
-    const commandData = this.commands.forEach((command) =>
+    const commandData = Array.from(this.commands.values()).map((command) =>
       command.data.toJSON()
     );
     try {
