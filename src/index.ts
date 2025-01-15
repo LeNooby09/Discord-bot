@@ -10,17 +10,20 @@ import {
   MessageFlags,
   REST,
   Routes,
+  ActivityType,
+  PresenceUpdateStatus,
 } from "discord.js";
 import * as logger from "./logger.js";
 import { CommandImplementation } from "./types/CommandImplementation.js";
 import { CommandContext } from "./types/CommandContext.js";
 import { fetchCommandImplementations } from "./commands/index.js";
 
+const CONFIG_PATH = "./config.json";
+const CONFIG = JSON.parse(fs.readFileSync(CONFIG_PATH, "utf-8"));
+
 const CLIENT_OPTIONS = {
   intents: [GatewayIntentBits.Guilds],
 };
-const CONFIG_PATH = "./config.json";
-const CONFIG = JSON.parse(fs.readFileSync(CONFIG_PATH, "utf-8"));
 const ERROR_REPLY_OPTIONS: InteractionReplyOptions = {
   content: "There was an error while executing this command!",
   flags: MessageFlags.Ephemeral,
@@ -62,6 +65,7 @@ export class DiscordBot {
       logger.error(`Failed to register commands: ${error}`);
     }
   }
+
   public async fetchCommands() {
     this.commands = await fetchCommandImplementations();
     if (!this.commands) {
@@ -73,9 +77,11 @@ export class DiscordBot {
     }
     await this.pushCommandsToDiscord();
   }
+
   private onReady(readyClient: Client) {
     logger.success(`Ready! Logged in as ${readyClient.user.tag}.`);
   }
+
   private async onInteractionCreate(interaction: Interaction) {
     if (!interaction.isChatInputCommand()) return;
 
