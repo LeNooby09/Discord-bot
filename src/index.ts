@@ -62,7 +62,7 @@ export class DiscordBot {
       });
       logger.success(`Registered commands.`);
     } catch (error) {
-      logger.error(`Failed to register commands: ${error}`);
+      logger.error(`Failed to register commands: ${error.stack}`);
     }
   }
 
@@ -95,7 +95,7 @@ export class DiscordBot {
     try {
       await command.execute(context);
     } catch (error) {
-      logger.error(`Error while executing command: ${error}`);
+      logger.error(`Error while executing command: {error.stack}`);
       await this.replyWithError(interaction);
     }
   }
@@ -112,7 +112,7 @@ export class DiscordBot {
 
   public async setup() {
     await this.client.login(this.token).catch((error) => {
-      logger.fatal(`Failed to login: ${error}`);
+      logger.fatal(`Failed to login: ${error.stack}`);
     });
     await this.fetchCommands();
 
