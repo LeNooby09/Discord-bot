@@ -14,4 +14,5 @@ export const data = new SlashCommandBuilder()
 export async function execute(context: CommandContext) {
   const input = context.interaction.options.getString("input")!;
   await context.interaction.channel?.send(input);
+  await context.interaction.reply({ content: "Echoed!", ephemeral: true });
 }
