@@ -63,7 +63,7 @@ export class DiscordBot {
       logger.error(`Failed to register commands: ${error}`);
     }
   }
-  private async fetchCommands() {
+  public async fetchCommands() {
     this.commands = await fetchCommandImplementations();
     if (!this.commands) {
       logger.fatal("Failed to fetch command implementations.");
