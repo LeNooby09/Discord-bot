@@ -89,7 +89,7 @@ export class DiscordBot {
     try {
       await command.execute(context);
     } catch (error) {
-      logger.error(`Error while executing command: {error.stack}`);
+      logger.error(`Error while executing command: ${error.stack}`);
       await this.replyWithError(interaction);
     }
   }
