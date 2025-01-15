@@ -45,6 +45,11 @@ export class DiscordBot {
   }
 
   private async pushCommandsToDiscord() {
+    if (!this.client?.user?.id) {
+      console.error("Client is not ready to push commands.");
+      process.exit(1);
+    }
+
     const rest = new REST().setToken(this.token);
     const commandData = this.commands.forEach((command) =>
       command.data.toJSON()
