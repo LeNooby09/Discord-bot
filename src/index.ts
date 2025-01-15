@@ -8,6 +8,8 @@ import {
   Interaction,
   InteractionReplyOptions,
   MessageFlags,
+  REST,
+  Routes,
 } from "discord.js";
 import { CommandImplementation } from "./types/CommandImplementation.js";
 import { CommandContext } from "./types/CommandContext.js";
@@ -44,6 +46,21 @@ export class DiscordBot {
 
   private async fetchCommands() {
     this.commands = await fetchCommandImplementations();
+
+    // Push commands to Discord
+    const rest = new REST().setToken(this.token);
+    const commandData = this.commands.forEach((command) =>
+      command.data.toJSON()
+    );
+    try {
+      await rest.put(
+        Routes.applicationGuildCommands(this.client.user.id, CONFIG.guildId),
+        { body: commandData }
+      );
+      console.log(`Successfully registered commands.`);
+    } catch (error) {
+      console.error(`Failed to register commands: ${error}`);
+    }
   }
   private onReady(readyClient: Client) {
     console.log(`Ready! Logged in as ${readyClient.user.tag}`);
