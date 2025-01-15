@@ -2,26 +2,47 @@ import fs from "fs";
 import path from "path";
 import { CommandImplementation } from "../types/CommandImplementation";
 
-const COMMANDS: Map<string, CommandImplementation> = new Map();
 const COMMAND_PATH = import.meta.dirname;
-const COMMAND_FILES = fs
-  .readdirSync(COMMAND_PATH)
-  .filter((file) => !file.includes(".")) // Check if not a directory
-  .flatMap((directory) =>
+
+function getCommandFiles(): string[] {
+  return (
     fs
-      .readdirSync(path.join(COMMAND_PATH, directory))
-      .map((file) => path.join(directory, file))
+      .readdirSync(COMMAND_PATH)
+      .filter((file) =>
+        fs.statSync(path.join(COMMAND_PATH, file)).isDirectory()
+      )
+      // Get all files in all directories
+      .flatMap((directory) =>
+        fs
+          .readdirSync(path.join(COMMAND_PATH, directory))
+          .map((file) => path.join(directory, file))
+      )
   );
-
-for (const file of COMMAND_FILES) {
-  const filePath = path.join(COMMAND_PATH, file);
-  const implementation: CommandImplementation = await import(filePath);
-  if (!implementation.data || !implementation.execute) {
-    console.error(`Command file "${filePath}" is missing "data" or "execute".`);
-    continue;
-  }
-
-  COMMANDS.set(implementation.data.name, implementation);
 }
 
-export default COMMANDS;
+function checkIfValidCommandImplementation(
+  implementation: CommandImplementation
+) {
+  if (!implementation.data || !implementation.execute) {
+    console.error(
+      `Command file is missing "data" or "execute". Skipping command.`
+    );
+    return false;
+  }
+  return true;
+}
+
+export async function fetchCommandImplementations() {
+  const commandFiles = getCommandFiles();
+  const commandImplementations: Map<string, CommandImplementation> = new Map();
+
+  for (const file of commandFiles) {
+    const filePath = path.join(COMMAND_PATH, file);
+    const implementation: CommandImplementation = await import(filePath);
+    if (!checkIfValidCommandImplementation(implementation)) continue;
+
+    commandImplementations.set(implementation.data.name, implementation);
+  }
+
+  return commandImplementations;
+}

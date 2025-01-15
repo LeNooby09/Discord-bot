@@ -11,7 +11,7 @@ import {
 } from "discord.js";
 import { CommandImplementation } from "./types/CommandImplementation.js";
 import { CommandContext } from "./types/CommandContext.js";
-import commands from "./commands/index.js";
+import { fetchCommandImplementations } from "./commands/index.js";
 
 const CLIENT_OPTIONS = {
   intents: [GatewayIntentBits.Guilds],
@@ -24,14 +24,13 @@ const ERROR_REPLY_OPTIONS: InteractionReplyOptions = {
 };
 
 export class DiscordBot {
-  public client: Client;
-  public commands: Map<string, CommandImplementation>;
-  private token: string;
+  private readonly token: string;
+  private readonly client: Client;
+  private commands?: Map<string, CommandImplementation>;
 
   constructor(token: string) {
-    this.client = DiscordBot.createClient();
-    this.commands = commands;
     this.token = token;
+    this.client = DiscordBot.createClient();
   }
 
   private static createClient() {
@@ -43,6 +42,9 @@ export class DiscordBot {
     return client;
   }
 
+  private async fetchCommands() {
+    this.commands = await fetchCommandImplementations();
+  }
   private onReady(readyClient: Client) {
     console.log(`Ready! Logged in as ${readyClient.user.tag}`);
   }
@@ -77,6 +79,8 @@ export class DiscordBot {
   }
 
   public async setup() {
+    await this.fetchCommands();
+
     this.client.once(Events.ClientReady, this.onReady.bind(this));
     this.client.on(
       Events.InteractionCreate,
