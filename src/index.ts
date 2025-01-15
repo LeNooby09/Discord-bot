@@ -44,10 +44,7 @@ export class DiscordBot {
     return client;
   }
 
-  private async fetchCommands() {
-    this.commands = await fetchCommandImplementations();
-
-    // Push commands to Discord
+  private async pushCommandsToDiscord() {
     const rest = new REST().setToken(this.token);
     const commandData = this.commands.forEach((command) =>
       command.data.toJSON()
@@ -61,6 +58,15 @@ export class DiscordBot {
     } catch (error) {
       console.error(`Failed to register commands: ${error}`);
     }
+  }
+  private async fetchCommands() {
+    this.commands = await fetchCommandImplementations();
+    if (!this.commands) {
+      console.error("Failed to fetch command implementations.");
+      process.exit(1);
+    }
+
+    await this.pushCommandsToDiscord();
   }
   private onReady(readyClient: Client) {
     console.log(`Ready! Logged in as ${readyClient.user.tag}`);
@@ -96,9 +102,9 @@ export class DiscordBot {
   }
 
   public async setup() {
+    await this.client.login(this.token);
     await this.fetchCommands();
 
-    this.client.login(this.token);
     this.client.once(Events.ClientReady, this.onReady.bind(this));
     this.client.on(
       Events.InteractionCreate,
