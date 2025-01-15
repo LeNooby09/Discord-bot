@@ -105,7 +105,9 @@ export class DiscordBot {
   }
 
   public async setup() {
-    await this.client.login(this.token);
+    await this.client.login(this.token).catch((error) => {
+      logger.fatal(`Failed to login: ${error}`);
+    });
     await this.fetchCommands();
 
     this.client.once(Events.ClientReady, this.onReady.bind(this));
