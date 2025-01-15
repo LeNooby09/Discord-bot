@@ -1,5 +1,7 @@
 import fs from "fs";
 import {
+  CacheType,
+  ChatInputCommandInteraction,
   Client,
   Events,
   GatewayIntentBits,
@@ -11,7 +13,15 @@ import { CommandImplementation } from "./types/CommandImplementation.js";
 import { CommandContext } from "./types/CommandContext.js";
 import commands from "./commands/index.js";
 
-const CONFIG = JSON.parse(fs.readFileSync("./config.json", "utf-8"));
+const CLIENT_OPTIONS = {
+  intents: [GatewayIntentBits.Guilds],
+};
+const CONFIG_PATH = "./config.json";
+const CONFIG = JSON.parse(fs.readFileSync(CONFIG_PATH, "utf-8"));
+const ERROR_REPLY_OPTIONS: InteractionReplyOptions = {
+  content: "There was an error while executing this command!",
+  flags: MessageFlags.Ephemeral,
+};
 
 export class DiscordBot {
   public client: Client;
@@ -19,16 +29,18 @@ export class DiscordBot {
   private token: string;
 
   constructor(token: string) {
-    this.client = new Client({
-      intents: [GatewayIntentBits.Guilds],
-    });
-    if (!this.client) {
+    this.client = DiscordBot.createClient();
+    this.commands = commands;
+    this.token = token;
+  }
+
+  private static createClient() {
+    const client = new Client(CLIENT_OPTIONS);
+    if (!client) {
       console.error("Failed to create a new Discord client.");
       process.exit(1);
     }
-
-    this.commands = commands;
-    this.token = token;
+    return client;
   }
 
   private onReady(readyClient: Client) {
@@ -50,16 +62,17 @@ export class DiscordBot {
       await command.execute(context);
     } catch (error) {
       console.error(error);
+      await this.replyWithError(interaction);
+    }
+  }
 
-      const replyOptions: InteractionReplyOptions = {
-        content: "There was an error while executing this command!",
-        flags: MessageFlags.Ephemeral,
-      };
-      if (interaction.replied || interaction.deferred) {
-        await interaction.followUp(replyOptions);
-      } else {
-        await interaction.reply(replyOptions);
-      }
+  private async replyWithError(
+    interaction: ChatInputCommandInteraction<CacheType>
+  ) {
+    if (interaction.replied || interaction.deferred) {
+      await interaction.followUp(ERROR_REPLY_OPTIONS);
+    } else {
+      await interaction.reply(ERROR_REPLY_OPTIONS);
     }
   }
 
