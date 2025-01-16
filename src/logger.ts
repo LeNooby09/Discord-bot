@@ -1,12 +1,7 @@
+// Imports //
 import chalk, { ChalkInstance } from "chalk";
 
-const TIME_OPTIONS: Intl.DateTimeFormatOptions = {
-  hour12: false,
-  hour: "2-digit",
-  minute: "2-digit",
-  second: "2-digit",
-};
-
+// Enums //
 const enum LogLevel {
   INFO = "INFO",
   WARNING = "WARNING",
@@ -15,6 +10,15 @@ const enum LogLevel {
   SUCCESS = "SUCCESS",
 }
 
+// Constants //
+const TIME_OPTIONS: Intl.DateTimeFormatOptions = {
+  hour12: false,
+  hour: "2-digit",
+  minute: "2-digit",
+  second: "2-digit",
+};
+
+// Local Functions //
 function formatMessage(
   level: LogLevel,
   color: ChalkInstance,
@@ -24,6 +28,7 @@ function formatMessage(
   return `${chalk.gray(`[${timestamp}]`)} ${color(`[${level}]`)}: ${message}`;
 }
 
+// Exports //
 export function warning(message: string): void {
   console.log(formatMessage(LogLevel.WARNING, chalk.yellow.bold, message));
 }

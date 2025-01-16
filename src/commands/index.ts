@@ -1,10 +1,13 @@
+// Imports //
 import fs from "fs";
 import path from "path";
 import * as logger from "../logger.js";
 import { CommandImplementation } from "../types/CommandImplementation";
 
+// Constants //
 const COMMAND_PATH = import.meta.dirname;
 
+// Local Functions //
 function getCommandFiles(): string[] {
   return (
     fs
@@ -33,6 +36,7 @@ function checkIfValidCommandImplementation(
   return true;
 }
 
+// Exports //
 export async function fetchCommandImplementations() {
   const commandFiles = getCommandFiles();
   const commandImplementations: Map<string, CommandImplementation> = new Map();

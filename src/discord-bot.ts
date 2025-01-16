@@ -1,31 +1,24 @@
-import {
-  CacheType,
-  ChatInputCommandInteraction,
-  Client,
-  Events,
-  GatewayIntentBits,
-  Interaction,
-  InteractionReplyOptions,
-  MessageFlags,
-  REST,
-  Routes,
-} from "discord.js";
+// Imports //
+import * as Discord from "discord.js";
 import * as logger from "./logger.js";
+
 import { CommandImplementation } from "./types/CommandImplementation.js";
 import { CommandContext } from "./types/CommandContext.js";
 import { fetchCommandImplementations } from "./commands/index.js";
 
+// Constants //
 const CLIENT_OPTIONS = {
-  intents: [GatewayIntentBits.Guilds],
+  intents: [Discord.GatewayIntentBits.Guilds],
 };
-const ERROR_REPLY_OPTIONS: InteractionReplyOptions = {
+const ERROR_REPLY_OPTIONS: Discord.InteractionReplyOptions = {
   content: "There was an error while executing this command!",
-  flags: MessageFlags.Ephemeral,
+  flags: Discord.MessageFlags.Ephemeral,
 };
 
+// DiscordBot //
 export class DiscordBot {
   private readonly token: string;
-  private readonly client: Client;
+  private readonly client: Discord.Client;
   private commands?: Map<string, CommandImplementation>;
 
   constructor(token: string) {
@@ -34,7 +27,7 @@ export class DiscordBot {
   }
 
   private static createClient() {
-    const client = new Client(CLIENT_OPTIONS);
+    const client = new Discord.Client(CLIENT_OPTIONS);
     if (!client) {
       logger.fatal("Failed to create a new Discord client.");
     }
@@ -46,12 +39,12 @@ export class DiscordBot {
       logger.fatal("Client is not ready to push commands.");
     }
 
-    const rest = new REST().setToken(this.token);
+    const rest = new Discord.REST().setToken(this.token);
     const commandData = Array.from(this.commands.values()).map((command) =>
       command.data.toJSON()
     );
     try {
-      await rest.put(Routes.applicationCommands(this.client.user.id), {
+      await rest.put(Discord.Routes.applicationCommands(this.client.user.id), {
         body: commandData,
       });
       logger.success(`Registered commands.`);
@@ -72,11 +65,11 @@ export class DiscordBot {
     await this.pushCommandsToDiscord();
   }
 
-  private onReady(readyClient: Client) {
+  private onReady(readyClient: Discord.Client) {
     logger.success(`Ready! Logged in as ${readyClient.user.tag}.`);
   }
 
-  private async onInteractionCreate(interaction: Interaction) {
+  private async onInteractionCreate(interaction: Discord.Interaction) {
     if (!interaction.isChatInputCommand()) return;
 
     const command = this.commands.get(interaction.commandName);
@@ -95,7 +88,7 @@ export class DiscordBot {
   }
 
   private async replyWithError(
-    interaction: ChatInputCommandInteraction<CacheType>
+    interaction: Discord.ChatInputCommandInteraction<Discord.CacheType>
   ) {
     if (interaction.replied || interaction.deferred) {
       await interaction.followUp(ERROR_REPLY_OPTIONS);
@@ -110,9 +103,9 @@ export class DiscordBot {
     });
     await this.fetchCommands();
 
-    this.client.once(Events.ClientReady, this.onReady.bind(this));
+    this.client.once(Discord.Events.ClientReady, this.onReady.bind(this));
     this.client.on(
-      Events.InteractionCreate,
+      Discord.Events.InteractionCreate,
       this.onInteractionCreate.bind(this)
     );
   }

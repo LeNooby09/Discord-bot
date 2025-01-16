@@ -1,6 +1,8 @@
+// Imports //
 import { SlashCommandBuilder } from "discord.js";
 import { CommandContext } from "../../types/CommandContext";
 
+// Exports //
 export const data = new SlashCommandBuilder()
   .setName("echo")
   .setDescription("Echoes your input")
