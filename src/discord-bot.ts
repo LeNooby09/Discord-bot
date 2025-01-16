@@ -15,6 +15,15 @@ const ERROR_REPLY_OPTIONS: Discord.InteractionReplyOptions = {
   flags: Discord.MessageFlags.Ephemeral,
 };
 
+// Local Functions //
+function createClient() {
+  const client = new Discord.Client(CLIENT_OPTIONS);
+  if (!client) {
+    logger.fatal("Failed to create a new Discord client.");
+  }
+  return client;
+}
+
 // DiscordBot //
 export class DiscordBot {
   private readonly token: string;
@@ -23,15 +32,7 @@ export class DiscordBot {
 
   constructor(token: string) {
     this.token = token;
-    this.client = DiscordBot.createClient();
-  }
-
-  private static createClient() {
-    const client = new Discord.Client(CLIENT_OPTIONS);
-    if (!client) {
-      logger.fatal("Failed to create a new Discord client.");
-    }
-    return client;
+    this.client = createClient();
   }
 
   private async pushCommandsToDiscord() {
@@ -65,22 +66,19 @@ export class DiscordBot {
     await this.pushCommandsToDiscord();
   }
 
-  private onReady(readyClient: Discord.Client) {
-    logger.success(`Ready! Logged in as ${readyClient.user.tag}.`);
-  }
-
   private async onInteractionCreate(interaction: Discord.Interaction) {
     if (!interaction.isChatInputCommand()) return;
 
-    const command = this.commands.get(interaction.commandName);
-    if (!command) {
-      logger.error(`No command matching ${interaction.commandName} was found.`);
+    const commandName = interaction.commandName;
+    const commandImplementation = this.commands.get(commandName);
+    if (!commandImplementation) {
+      logger.error(`No command matching ${commandName} was found.`);
       return;
     }
 
     const context: CommandContext = { interaction, bot: this };
     try {
-      await command.execute(context);
+      await commandImplementation.execute(context);
     } catch (error) {
       logger.error(`Error while executing command: ${error.stack}`);
       await this.replyWithError(interaction);
@@ -103,7 +101,9 @@ export class DiscordBot {
     });
     await this.fetchCommands();
 
-    this.client.once(Discord.Events.ClientReady, this.onReady.bind(this));
+    this.client.once(Discord.Events.ClientReady, (client) => {
+      logger.success(`Ready! Logged in as ${client.user.tag}.`);
+    });
     this.client.on(
       Discord.Events.InteractionCreate,
       this.onInteractionCreate.bind(this)
