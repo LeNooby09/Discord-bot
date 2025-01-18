@@ -48,11 +48,20 @@ async function fetchAllMessages(channel: TextChannel, interactionId: string) {
 function jsonAndGzipMessages(messages: any[]) {
   const messagesString = JSON.stringify(messages);
   const messagesBuffer = Buffer.from(messagesString, "utf-8");
-  return zlib.gzipSync(messagesBuffer);
+  const compressed = zlib.gzipSync(messagesBuffer);
+
+  logger.info(
+    `Compressed messages from ${messagesBuffer.length} bytes to ${compressed.length} bytes`
+  );
+
+  return compressed;
 }
 function cleanUpFile(filePath: string) {
   if (fs.existsSync(filePath)) {
     fs.unlinkSync(filePath);
+    logger.info(`Deleted temporary file ${filePath}`);
+  } else {
+    logger.error(`Failed to delete non-existent temporary file ${filePath}`);
   }
 }
 
@@ -103,6 +112,7 @@ export async function execute(context: CommandContext) {
   const realFilePath = TMP_DIRECTORY + filename + FILENAME_POSTFIX;
   const gzippedMessages = jsonAndGzipMessages(messages);
   fs.writeFileSync(realFilePath, gzippedMessages);
+  logger.info(`Saved temporary file with messages to ${realFilePath}`);
 
   await context.interaction.reply({
     content: `Saved messages to ${filename}${FILENAME_POSTFIX}, size: ${gzippedMessages.length} bytes`,
