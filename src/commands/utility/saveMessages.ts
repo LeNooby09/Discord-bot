@@ -116,7 +116,15 @@ export async function execute(context: CommandContext) {
 
   await context.interaction.reply({
     content: `Saved messages to ${filename}${FILENAME_POSTFIX}, size: ${gzippedMessages.length} bytes`,
-    files: [realFilePath],
+    files: [
+      {
+        attachment: realFilePath,
+        // For some fucking reason whenever the filename is "<filename>.json.gz" Discord
+        // Converts the filename to "<filename>.json.json" when downloading it. So
+        // We're just going to remove the ".json" part of the filename.
+        name: filename + ".gz",
+      },
+    ],
   });
 
   cleanUpFile(realFilePath);
