@@ -96,14 +96,16 @@ export class DiscordBot {
   }
 
   public async setup() {
-    await this.client.login(this.token).catch((error) => {
-      logger.fatal(`Failed to login: ${error.stack}`);
-    });
+    await this.client
+      .login(this.token)
+      .then(() => {
+        logger.success(`Ready! Logged in as ${this.client.user.tag}`);
+      })
+      .catch((error) => {
+        logger.fatal(`Failed to login: ${error.stack}`);
+      });
     await this.fetchCommands();
 
-    this.client.once(Discord.Events.ClientReady, (client) => {
-      logger.success(`Ready! Logged in as ${client.user.tag}.`);
-    });
     this.client.on(
       Discord.Events.InteractionCreate,
       this.onInteractionCreate.bind(this)
