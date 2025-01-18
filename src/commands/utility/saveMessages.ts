@@ -84,7 +84,7 @@ export async function execute(context: CommandContext) {
   if (!(channel instanceof TextChannel)) {
     await context.interaction.reply({
       content: "This command only works in text channels",
-      ephemeral: true,
+      flags: "Ephemeral",
     });
     return;
   }
@@ -92,7 +92,7 @@ export async function execute(context: CommandContext) {
     await context.interaction.reply({
       content:
         "Invalid filename. Only alphanumeric characters, hyphens, and underscores are allowed.",
-      ephemeral: true,
+      flags: "Ephemeral",
     });
     return;
   }
