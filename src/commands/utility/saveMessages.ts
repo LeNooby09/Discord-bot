@@ -3,7 +3,11 @@ import fs from "fs";
 import zlib from "zlib";
 import * as logger from "../../logger.js";
 
-import { SlashCommandBuilder, TextChannel } from "discord.js";
+import {
+  PermissionFlagsBits,
+  SlashCommandBuilder,
+  TextChannel,
+} from "discord.js";
 import { CommandContext } from "../../types/CommandContext";
 
 // Constants //
@@ -96,11 +100,20 @@ export async function execute(context: CommandContext) {
       flags: "Ephemeral",
     });
     return;
-  }
-  if (!filename.match(VALID_FILENAME_REGEX)) {
+  } else if (!filename.match(VALID_FILENAME_REGEX)) {
     await context.interaction.reply({
       content:
         "Invalid filename. Only alphanumeric characters, hyphens, and underscores are allowed.",
+      flags: "Ephemeral",
+    });
+    return;
+  } else if (
+    !channel
+      .permissionsFor(context.interaction.user)
+      .has(PermissionFlagsBits.ViewChannel)
+  ) {
+    await context.interaction.reply({
+      content: "You do not have permission to view messages in this channel",
       flags: "Ephemeral",
     });
     return;
@@ -115,7 +128,7 @@ export async function execute(context: CommandContext) {
   logger.info(`Saved temporary file with messages to ${realFilePath}`);
 
   await context.interaction.reply({
-    content: `Saved messages to ${filename}${FILENAME_POSTFIX}, size: ${gzippedMessages.length} bytes`,
+    content: `Saved messages to ${filename}.gz (${messages.length} messages)`,
     files: [
       {
         attachment: realFilePath,
