@@ -15,6 +15,7 @@ interface MessageData {
   author: string;
   content: string;
   timestamp: number;
+  replyToMessageId?: string;
 }
 
 // Local Functions //
@@ -36,6 +37,7 @@ async function fetchAllMessages(channel: TextChannel, interactionId: string) {
         author: message.author.id,
         content: message.content,
         timestamp: message.createdTimestamp,
+        replyToMessageId: message.reference?.messageId,
       };
 
       messages.push(messageData);
