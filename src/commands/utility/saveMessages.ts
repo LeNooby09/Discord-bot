@@ -9,6 +9,14 @@ import { CommandContext } from "../../types/CommandContext";
 // Constants //
 const JSON_FILENAME = "messages-{CHANNEL_ID}.json";
 
+// Interfaces //
+interface MessageData {
+  id: string;
+  author: string;
+  content: string;
+  timestamp: number;
+}
+
 // Local Functions //
 async function fetchAllMessages(channel: TextChannel, interactionId: string) {
   const messages = [];
@@ -23,12 +31,14 @@ async function fetchAllMessages(channel: TextChannel, interactionId: string) {
     if (fetchedMessages.size === 0) break;
 
     fetchedMessages.forEach((message) => {
-      messages.push({
+      const messageData: MessageData = {
         id: message.id,
         author: message.author.id,
         content: message.content,
         timestamp: message.createdTimestamp,
-      });
+      };
+
+      messages.push(messageData);
     });
 
     messageIdCursor = fetchedMessages.last()!.id;
