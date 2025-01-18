@@ -8,8 +8,8 @@ import { CommandContext } from "../../types/CommandContext";
 
 // Constants //
 const TMP_DIRECTORY = "/tmp/DiscordBot/";
-const DEFAULT_FILENAME = "messages.json";
-const FILENAME_POSTFIX = ".gz";
+const DEFAULT_FILENAME = "messages";
+const FILENAME_POSTFIX = ".json.gz";
 const VALID_FILENAME_REGEX = /^[a-zA-Z0-9-_]+$/;
 
 // Local Functions //
