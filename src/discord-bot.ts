@@ -42,7 +42,7 @@ export class DiscordBot {
 
     const rest = new Discord.REST().setToken(this.token);
     const commandData = Array.from(this.commands.values()).map((command) =>
-      command.data.toJSON()
+      command.data.toJSON(),
     );
     try {
       await rest.put(Discord.Routes.applicationCommands(this.client.user.id), {
@@ -86,9 +86,14 @@ export class DiscordBot {
   }
 
   private async replyWithError(
-    interaction: Discord.ChatInputCommandInteraction<Discord.CacheType>
+    interaction: Discord.ChatInputCommandInteraction<Discord.CacheType>,
   ) {
-    if (interaction.replied || interaction.deferred) {
+    const isAcknowledged = (interaction: any) => interaction.isAcknowledged();
+
+    if (
+      (!isAcknowledged(interaction) && interaction.replied) ||
+      interaction.deferred
+    ) {
       await interaction.followUp(ERROR_REPLY_OPTIONS);
     } else {
       await interaction.reply(ERROR_REPLY_OPTIONS);
@@ -108,7 +113,7 @@ export class DiscordBot {
 
     this.client.on(
       Discord.Events.InteractionCreate,
-      this.onInteractionCreate.bind(this)
+      this.onInteractionCreate.bind(this),
     );
   }
 }
